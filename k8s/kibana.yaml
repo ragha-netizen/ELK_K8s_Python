@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.5.1  # Use the same version as Elasticsearch
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: "http://elasticsearch-master:9200"
+        ports:
+        - containerPort: 5601
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+spec:
+  type: NodePort  # Change to ClusterIP if using Ingress
+  selector:
+    app: kibana
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601
+      nodePort: 32000  # Access Kibana at http://localhost:32000
